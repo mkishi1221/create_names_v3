@@ -69,6 +69,7 @@ def create_Keyword_dict(
 
 def create_Keyword_Export(
         origin: str,
+        relevance: float,
         pos: str,
         word: str, 
         shortlist: str
@@ -76,24 +77,8 @@ def create_Keyword_Export(
 
     return Keyword_Export(
         origin=origin,
+        relevance=relevance,
         pos=pos,
         keyword=word,
         shortlist=shortlist
     )
-
-def create_Keyword_shortlist(
-        keyword_shortlist: list[Keyword_Export],
-        origin: str,
-        pos: str,
-        word: str, 
-        shortlist: str
-    ):
-    kw_obj = create_Keyword_Export(
-        origin,
-        pos,
-        word, 
-        shortlist
-    )
-    if kw_obj not in keyword_shortlist:
-        keyword_shortlist.append(kw_obj)
-    return keyword_shortlist

@@ -17,13 +17,6 @@ limit_count = {
     "adjective": 0
 }
 
-def uniq(raw_list):
-    uniq_list = []
-    for item in raw_list:
-        if item not in uniq_list:
-            uniq_list.append(item)
-    return uniq_list
-
 required_pos = ["noun", "verb", "adjective", "abbreviation"]
 shortlist_pos = ["noun", "verb", "adjective"]
 
@@ -36,6 +29,7 @@ def shortlist_keywords(
     for kw in sorted_keywords:
         word = kw.keyword
         origin = "/".join(kw.origins)
+        yake_score = kw.yake_score
         pos_list = []
         for p in kw.pos_list:
             if p in required_pos:
@@ -72,6 +66,7 @@ def shortlist_keywords(
                 shortlisted_keywords.append(
                     create_Keyword_Export(
                         origin,
+                        yake_score,
                         p,
                         w, 
                         shortlist

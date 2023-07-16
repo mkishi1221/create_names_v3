@@ -42,6 +42,7 @@ class Keyword:
 @dataclass
 class Keyword_Export:
     origin: str = None
+    relevance: float = None
     pos: str = None
     keyword: str = None
     shortlist: str = None
@@ -68,19 +69,20 @@ class Keyword_Export:
 @dataclass
 class Modword:
     keyword: str = None
-    pos: str = None
+    relevance: float = None
     modifier: str = None
-    modlen: int = None
+    lang: str = None
+    pos: str = None
     modword: str = None
 
     def __eq__(self, o: object) -> bool:
-        return self.modword == o.modword and self.keyword == o.keyword and self.pos == o.pos
+        return self.modword == o.modword and self.pos == o.pos
 
     def __ne__(self, o: object) -> bool:
-        return self.modword != o.modword and self.keyword != o.keyword and self.pos != o.pos
+        return self.modword != o.modword and self.pos != o.pos
 
     def __hash__(self) -> int:
-        return hash((self.source_word, self.keyword_len, self.keyword, self.modword, self.pos))
+        return hash((self.modword, self.pos))
 
     def __repr__(self) -> str:
         return str(

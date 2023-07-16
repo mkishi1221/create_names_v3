@@ -42,19 +42,13 @@ def generate_names(project_id):
     master_data_dict = {}
 
     # Check if sentences exists and create keywords from sentences
-    if os.path.exists(sentences_tsv_fp):
-        block_text = open(sentences_tsv_fp, "r").read()
-    else:
-        block_text = ""
-
-    if os.path.exists(user_words_tsv_fp):
-        word_list = open(user_words_tsv_fp, "r").read()
-    else:
-        word_list = ""
+    block_text = open(sentences_tsv_fp, "r").read() if os.path.exists(sentences_tsv_fp) else ""
+    word_list = open(user_words_tsv_fp, "r").read() if os.path.exists(user_words_tsv_fp) else ""
     
+    # Extract keywords from sentences
     if len(block_text) != 0:
-        print("Processing block text...")
         # Apply some formatting to block of text
+        print("Processing block text...")
         block_text = block_text.replace("/", " / ")
         block_text = re.sub(" +", " ", block_text)
 
@@ -79,10 +73,10 @@ def generate_names(project_id):
         # Add extracted sentences to master_data_dict
         sys.stdout.write("\033[K")
         print(f"Processed all {line_len} lines.")
-
     else:
         print("Skipping block text...")
 
+    # Extract keywords from keyword list
     if len(word_list) != 0:
         print("Processing word_list...")
         all_keywords, ignore = process_text(
@@ -97,23 +91,28 @@ def generate_names(project_id):
     else:
         print("Skipping word list...")
 
-    # Check if any keywords have been extracted, sort the keywords and add them to master_data_dict
-    # If no keywords are extracted, quit program.
-
+    # Check if any keywords have been extracted; if no keywords are extracted, quit program.
+    # Sort the keywords to relevancy, occurrance and alphabetical order and add them to master_data_dict.
+    # Shortlist relevant keywords and create modwords from shortlisted keywords
     keyword_count = len(all_keywords)
-
     if keyword_count > 0:
         print(f"{keyword_count} keywords collected....")
         sorted_keywords = sorted(
             all_keywords, key=lambda k: (k.yake_score, -k.occurrence, k.keyword)
         )
         print(f"Shortlisting keywords....")
+        # Choose keywords to create names from
         shortlisted_keywords = shortlist_keywords(sorted_keywords)
+        # Create modwords from shortlisted keywords
         modwords = create_modwords(shortlisted_keywords, eng_dict, curated_eng_words)
     else:
         print('No keywords extracted! Please add source data to the "data" folder.')
         quit()
     
+    
+
+    # Create final output file
+    print("Exporting output to excel....")
     master_data_dict["modwords"] = modwords
     master_data_dict["keyword_shortlist"] = shortlisted_keywords
     master_data_dict["keyword_groups"] = sorted_keywords

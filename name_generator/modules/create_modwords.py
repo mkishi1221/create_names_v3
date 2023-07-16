@@ -3,8 +3,10 @@
 
 from modules.collect_algorithms import collect_algorithms
 from modules.keyword_abbreviator import keyword_abbreviator
+from modules.run_googletrans import get_single_translation
 from classes.keyword_class import Keyword_Export
 from classes.keyword_class import Modword
+from transliterate import translit
 
 pos_conversion = {
     "adjective": "adje",
@@ -14,15 +16,18 @@ pos_conversion = {
 
 def create_Modword(
         word: str,
-        pos: str,
+        yake_score: float,
         modifier: str,
-        modword: str
+        pos: str,
+        modword: str,
+        lang: str = "English"
     ):
     return Modword(
         keyword=word,
-        pos=pos,
+        relevance=yake_score,
         modifier=modifier,
-        modlen=len(modword),
+        lang=lang,
+        pos=pos,
         modword=modword
     )
 
@@ -43,25 +48,30 @@ def create_modwords(shortlisted_keywords, eng_dict, curated_eng_words):
     # Filter to just shortlisted words
     shortlisted_keywords = [kw for kw in shortlisted_keywords if kw.shortlist == "s"]
     modword_list = []
+    all_modwords = set()
 
     # Create modwords for each shortlisted keyword
     kw: Keyword_Export
     for kw in shortlisted_keywords:
         word = kw.keyword
         pos = kw.pos
+        yake_score = kw.relevance
         # If pos is adj or adv, convert to 4 letter format
         if pos in pos_conversion.keys():
             pos = pos_conversion[pos]
 
         # Add unmodified word
-        modword_list.append(
-            create_Modword(
-                word,
-                pos,
-                "no_cut",
-                word
+        if word not in all_modwords:
+            all_modwords.add(word)
+            modword_list.append(create_Modword(
+                    word,
+                    yake_score,
+                    "no_cut",
+                    pos,
+                    word
+                )
             )
-        )
+
 
         # If required, add "cut words"
         # ab_cut stands for abbreviation_cut: more modifiers coming soon!
@@ -75,9 +85,27 @@ def create_modwords(shortlisted_keywords, eng_dict, curated_eng_words):
                 modword_list.append(
                     create_Modword(
                         word,
-                        pos,
+                        yake_score,
                         "ab_cut",
+                        pos,
                         ab
+                    )
+                )
+
+        output_lang_list = ["la", "el"]
+        for output_lang in output_lang_list:
+            translation, language = get_single_translation(word, "en", output_lang)
+            if translation is not None and " " not in translation:
+                if output_lang == "el":
+                    translation = translit(translation, 'el', reversed=True)
+                modword_list.append(
+                    create_Modword(
+                        word,
+                        yake_score,
+                        "no_cut",
+                        pos,
+                        translation,
+                        lang=language
                     )
                 )
 
